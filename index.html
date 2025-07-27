@@ -22,261 +22,262 @@
   </style>
 </head>
 
+ <!DOCTYPE html>
+<html lang="en">
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Budget Tracker</title>
   <style>
     body {
-      font-family: sans-serif;
+      font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
+      background: #f9f9f9;
     }
-
     .tabs {
       display: flex;
       background: #ddd;
+      border-bottom: 1px solid #ccc;
     }
-
     .tab {
       flex: 1;
-      text-align: center;
       padding: 10px;
+      text-align: center;
       cursor: pointer;
+      font-weight: bold;
       background: #eee;
-      border-bottom: 2px solid transparent;
     }
-
     .tab.active {
       background: #fff;
-      border-bottom: 2px solid #000;
+      border-bottom: 3px solid #333;
     }
-
     .tab-content {
+      padding: 10px;
       display: none;
-      padding: 15px;
     }
-
     .tab-content.active {
       display: block;
     }
-
     input, button {
-      font-size: 1em;
+      padding: 6px;
+      margin: 4px 2px;
+      font-size: 14px;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      background: #fff;
       margin: 4px 0;
       padding: 6px;
-    }
-
-    .entry {
+      border: 1px solid #ccc;
       display: flex;
       justify-content: space-between;
-      gap: 4px;
-      margin: 4px 0;
+      align-items: center;
     }
-
-    .entry input {
-      flex: 1;
-    }
-
     .paid {
-      background: #c8ffc8;
+      background: #d4edda;
     }
-
-    .summary-line {
+    .summary-item {
+      padding: 6px;
+      background: #fff;
       margin: 4px 0;
+      border: 1px solid #ccc;
     }
-
-    .top-summary {
-      font-weight: bold;
-      margin-bottom: 10px;
+    .actions button {
+      font-size: 12px;
+      margin-left: 4px;
     }
   </style>
 </head>
 <body>
 
-  <div class="tabs">
-    <div class="tab active" onclick="showTab('spending')">Spending</div>
-    <div class="tab" onclick="showTab('payback')">Payback</div>
-    <div class="tab" onclick="showTab('summary')">Summary</div>
-  </div>
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('spending')">Spending</div>
+  <div class="tab" onclick="switchTab('payback')">Payback</div>
+  <div class="tab" onclick="switchTab('summary')">Summary</div>
+</div>
 
-  <div id="spending" class="tab-content active">
-    <div>
-      <label>Add to Budget: $</label><input id="spend-budget-add" type="number">
-      <button onclick="addToBudget()">Add</button>
-    </div>
-    <div><strong>Total Budget:</strong> $<span id="spend-budget">0</span></div>
-    <div>
-      <input id="spend-desc" placeholder="What?">
-      <input id="spend-amount" type="number" placeholder="$">
-      <button onclick="addSpending()">Add</button>
-    </div>
-    <div>
-      <button onclick="clearSpending()">Clear All</button>
-      <button onclick="clearBudget()">Clear Budget</button>
-    </div>
-    <div id="spending-list"></div>
-  </div>
+<div id="spending" class="tab-content active">
+  <h2>Spending</h2>
+  <input type="number" id="spendingBudgetInput" placeholder="Add to budget" />
+  <button onclick="addToBudget()">Add</button>
+  <p><strong>Total Budget:</strong> $<span id="spendingBudget">0</span></p>
+  <input type="text" id="purchaseDesc" placeholder="What did you buy?" />
+  <input type="number" id="purchaseAmt" placeholder="Amount" />
+  <button onclick="addPurchase()">Add Purchase</button>
+  <button onclick="clearSpending()">Clear All</button>
+  <button onclick="clearSpendingBudget()">Clear Budget</button>
+  <ul id="purchaseList"></ul>
+</div>
 
-  <div id="payback" class="tab-content">
-    <div>
-      <label>Total Owed: $</label><input id="owed-amount" type="number" onchange="setOwed()" />
-    </div>
-    <div class="top-summary">
-      Paid Back: $<span id="paid-back">0</span> &nbsp; | &nbsp; Remaining: $<span id="remaining-owed">0</span>
-    </div>
-    <div>
-      <input id="payback-date" placeholder="Date">
-      <input id="payback-amount" type="number" placeholder="$">
-      <button onclick="addPayback()">Add</button>
-    </div>
-    <div id="payback-list"></div>
-  </div>
+<div id="payback" class="tab-content">
+  <h2>Payback</h2>
+  <input type="text" id="paybackDate" placeholder="Date or Note" />
+  <input type="number" id="paybackAmt" placeholder="Amount" />
+  <button onclick="addPayback()">Add Entry</button>
+  <ul id="paybackList"></ul>
+</div>
 
-  <div id="summary" class="tab-content">
-    <h3>Total Spent by Item</h3>
-    <div id="summary-list"></div>
-  </div>
+<div id="summary" class="tab-content">
+  <h2>Summary</h2>
+  <ul id="summaryList"></ul>
+</div>
 
-  <script>
-    const get = (id) => document.getElementById(id);
+<script>
+  const spendingKey = 'spendingData';
+  const paybackKey = 'paybackData';
 
-    function showTab(name) {
-      document.querySelectorAll('.tab-content').forEach(div => div.classList.remove('active'));
-      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-      get(name).classList.add('active');
-      event.target.classList.add('active');
-      if (name === 'summary') updateSummary();
+  function switchTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    document.querySelector(`.tab[onclick="switchTab('${tabId}')"]`).classList.add('active');
+    if (tabId === 'summary') updateSummary();
+  }
+
+  function saveData() {
+    localStorage.setItem(spendingKey, JSON.stringify(spending));
+    localStorage.setItem(paybackKey, JSON.stringify(payback));
+  }
+
+  let spending = JSON.parse(localStorage.getItem(spendingKey)) || { budget: 0, purchases: [] };
+  let payback = JSON.parse(localStorage.getItem(paybackKey)) || [];
+
+  function updateSpendingUI() {
+    document.getElementById('spendingBudget').textContent = spending.budget.toFixed(2);
+    const list = document.getElementById('purchaseList');
+    list.innerHTML = '';
+    spending.purchases.forEach((item, index) => {
+      const li = document.createElement('li');
+      li.className = item.paid ? 'paid' : '';
+      li.innerHTML = `
+        ${item.desc} – $${item.amount.toFixed(2)}
+        <div class="actions">
+          <button onclick="editPurchase(${index})">✏️</button>
+          <button onclick="deletePurchase(${index})">🗑️</button>
+          <button onclick="togglePaid(${index})">${item.paid ? 'Undo' : 'Paid'}</button>
+        </div>`;
+      list.appendChild(li);
+    });
+    saveData();
+  }
+
+  function updatePaybackUI() {
+    const list = document.getElementById('paybackList');
+    list.innerHTML = '';
+    payback.forEach((item, index) => {
+      const li = document.createElement('li');
+      li.innerHTML = `${item.date} – $${item.amount.toFixed(2)}
+        <div class="actions">
+          <button onclick="editPayback(${index})">✏️</button>
+          <button onclick="deletePayback(${index})">🗑️</button>
+        </div>`;
+      list.appendChild(li);
+    });
+    saveData();
+  }
+
+  function updateSummary() {
+    const summary = {};
+    spending.purchases.forEach(item => {
+      summary[item.desc] = (summary[item.desc] || 0) + item.amount;
+    });
+    const list = document.getElementById('summaryList');
+    list.innerHTML = '';
+    Object.entries(summary).forEach(([desc, total]) => {
+      const li = document.createElement('li');
+      li.className = 'summary-item';
+      li.textContent = `${desc} – $${total.toFixed(2)}`;
+      list.appendChild(li);
+    });
+  }
+
+  function addToBudget() {
+    const amt = parseFloat(document.getElementById('spendingBudgetInput').value);
+    if (!isNaN(amt)) {
+      spending.budget += amt;
+      document.getElementById('spendingBudgetInput').value = '';
+      updateSpendingUI();
     }
+  }
 
-    // --------- Spending Tab ---------
-
-    let spendingData = JSON.parse(localStorage.getItem("spendingData") || "[]");
-    let spendBudget = Number(localStorage.getItem("spendBudget") || "0");
-
-    function saveSpending() {
-      localStorage.setItem("spendingData", JSON.stringify(spendingData));
-      localStorage.setItem("spendBudget", spendBudget);
+  function addPurchase() {
+    const desc = document.getElementById('purchaseDesc').value;
+    const amt = parseFloat(document.getElementById('purchaseAmt').value);
+    if (desc && !isNaN(amt)) {
+      spending.purchases.push({ desc, amount: amt, paid: false });
+      document.getElementById('purchaseDesc').value = '';
+      document.getElementById('purchaseAmt').value = '';
+      updateSpendingUI();
     }
+  }
 
-    function addSpending() {
-      const desc = get("spend-desc").value.trim();
-      const amt = parseFloat(get("spend-amount").value);
-      if (!desc || isNaN(amt)) return;
-      spendingData.push({ desc, amt });
-      spendBudget -= amt;
-      get("spend-desc").value = "";
-      get("spend-amount").value = "";
-      saveSpending();
-      renderSpending();
+  function editPurchase(index) {
+    const item = spending.purchases[index];
+    const newDesc = prompt("Edit description:", item.desc);
+    const newAmt = prompt("Edit amount:", item.amount);
+    if (newDesc && !isNaN(parseFloat(newAmt))) {
+      spending.purchases[index] = { ...item, desc: newDesc, amount: parseFloat(newAmt) };
+      updateSpendingUI();
     }
+  }
 
-    function deleteSpending(i) {
-      spendBudget += spendingData[i].amt;
-      spendingData.splice(i, 1);
-      saveSpending();
-      renderSpending();
+  function deletePurchase(index) {
+    spending.purchases.splice(index, 1);
+    updateSpendingUI();
+  }
+
+  function togglePaid(index) {
+    spending.purchases[index].paid = !spending.purchases[index].paid;
+    updateSpendingUI();
+  }
+
+  function clearSpending() {
+    spending.purchases = [];
+    updateSpendingUI();
+  }
+
+  function clearSpendingBudget() {
+    spending.budget = 0;
+    updateSpendingUI();
+  }
+
+  function addPayback() {
+    const date = document.getElementById('paybackDate').value;
+    const amt = parseFloat(document.getElementById('paybackAmt').value);
+    if (date && !isNaN(amt)) {
+      payback.push({ date, amount: amt });
+      document.getElementById('paybackDate').value = '';
+      document.getElementById('paybackAmt').value = '';
+      updatePaybackUI();
     }
+  }
 
-    function clearSpending() {
-      if (confirm("Clear all purchases?")) {
-        spendingData = [];
-        saveSpending();
-        renderSpending();
-      }
+  function editPayback(index) {
+    const item = payback[index];
+    const newDate = prompt("Edit date:", item.date);
+    const newAmt = prompt("Edit amount:", item.amount);
+    if (newDate && !isNaN(parseFloat(newAmt))) {
+      payback[index] = { date: newDate, amount: parseFloat(newAmt) };
+      updatePaybackUI();
     }
+  }
 
-    function clearBudget() {
-      if (confirm("Clear total budget?")) {
-        spendBudget = 0;
-        saveSpending();
-        renderSpending();
-      }
-    }
+  function deletePayback(index) {
+    payback.splice(index, 1);
+    updatePaybackUI();
+  }
 
-    function addToBudget() {
-      const amt = parseFloat(get("spend-budget-add").value);
-      if (!isNaN(amt)) {
-        spendBudget += amt;
-        get("spend-budget-add").value = "";
-        saveSpending();
-        renderSpending();
-      }
-    }
+  updateSpendingUI();
+  updatePaybackUI();
+</script>
 
-    function renderSpending() {
-      get("spend-budget").textContent = spendBudget.toFixed(2);
-      get("spending-list").innerHTML = spendingData.map((item, i) =>
-        `<div class="entry">
-          <span>${item.desc} - $${item.amt.toFixed(2)}</span>
-          <button onclick="deleteSpending(${i})">X</button>
-        </div>`
-      ).join("");
-    }
-
-    // --------- Payback Tab ---------
-
-    let paybackData = JSON.parse(localStorage.getItem("paybackData") || "[]");
-    let totalOwed = Number(localStorage.getItem("totalOwed") || "0");
-
-    function savePayback() {
-      localStorage.setItem("paybackData", JSON.stringify(paybackData));
-      localStorage.setItem("totalOwed", totalOwed);
-    }
-
-    function setOwed() {
-      totalOwed = parseFloat(get("owed-amount").value || 0);
-      savePayback();
-      renderPayback();
-    }
-
-    function addPayback() {
-      const date = get("payback-date").value.trim();
-      const amt = parseFloat(get("payback-amount").value);
-      if (!date || isNaN(amt)) return;
-      paybackData.push({ date, amt });
-      get("payback-date").value = "";
-      get("payback-amount").value = "";
-      savePayback();
-      renderPayback();
-    }
-
-    function deletePayback(i) {
-      paybackData.splice(i, 1);
-      savePayback();
-      renderPayback();
-    }
-
-    function renderPayback() {
-      let paid = paybackData.reduce((sum, item) => sum + item.amt, 0);
-      get("paid-back").textContent = paid.toFixed(2);
-      get("remaining-owed").textContent = (totalOwed - paid).toFixed(2);
-      get("owed-amount").value = totalOwed.toFixed(2);
-      get("payback-list").innerHTML = paybackData.map((item, i) =>
-        `<div class="entry">
-          <span>${item.date} - $${item.amt.toFixed(2)}</span>
-          <button onclick="deletePayback(${i})">X</button>
-        </div>`
-      ).join("");
-    }
-
-    // --------- Summary Tab ---------
-
-    function updateSummary() {
-      const summary = {};
-      spendingData.forEach(item => {
-        if (!summary[item.desc]) summary[item.desc] = 0;
-        summary[item.desc] += item.amt;
-      });
-      const list = Object.entries(summary)
-        .map(([desc, amt]) => `<div class="summary-line">${desc} – $${amt.toFixed(2)}</div>`)
-        .join("");
-      get("summary-list").innerHTML = list || "<i>No purchases yet.</i>";
-    }
-
-    // --------- Init ---------
-    renderSpending();
-    renderPayback();
-  </script><script>
+</body>
+</html>
+<script>
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('service-worker.js')
       .then(() => console.log("Service Worker registered"))
