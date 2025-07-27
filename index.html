@@ -1,9 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <link rel="manifest" href="manifest.json">
-<link rel="icon" href="icon-192.png" sizes="192x192" type="image/png">
-<meta name="theme-color" content="#a2d2ff">
+  <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SOE Tracker</title>
+
+  <!-- PWA Meta & Manifest -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon-192.png" sizes="192x192" type="image/png" />
+  <meta name="theme-color" content="#a2d2ff" />
+  <meta name="description" content="A simple mobile budget tracker with multiple tabs." />
+
+  <!-- (Optional) Apple support -->
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+  <!-- Styles (already in your code likely) -->
+  <style>
+    /* your CSS goes here */
+  </style>
+</head>
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -259,11 +276,13 @@
     // --------- Init ---------
     renderSpending();
     renderPayback();
-  </script>
-  <script>
+  </script><script>
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js');
+    navigator.serviceWorker.register('service-worker.js')
+      .then(() => console.log("Service Worker registered"))
+      .catch(err => console.error("Service Worker registration failed:", err));
   }
 </script>
+
 </body>
 </html>
