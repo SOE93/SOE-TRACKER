@@ -1,0 +1,21 @@
+{
+  "name": "SOE Tracker",
+  "short_name": "SOE Tracker",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#a2d2ff",
+  "description": "A simple mobile budget tracker with multiple tabs.",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
